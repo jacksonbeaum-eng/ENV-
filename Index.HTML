@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Financial Tracker Pro</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    :root{--bg:#0a0a0f;--surface:#111118;--surface2:#18181f;--surface3:#1e1e28;--border:#2a2a38;--border2:#353548;--text:#f0f0ff;--text2:#9898b8;--text3:#5a5a78;--accent:#7c6dfa;--accent2:#5b4edd;--green:#22d3a0;--red:#f45b69;--mono:'Space Mono',monospace;--sans:'DM Sans',sans-serif;--blue:#3b82f6;--yellow:#fbbf24;--orange:#f97316;}
+    *{margin:0;padding:0;box-sizing:border-box;}
+    html,body,#root{width:100%;height:100%;}
+    body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;transition:background 0.2s,color 0.2s;-webkit-font-smoothing:antialiased;}
+    .wrap{max-width:100%;padding:1rem 1rem 2rem;position:relative;z-index:1;}
+    .tabs{display:flex;gap:0.5rem;margin-bottom:1.5rem;border-bottom:1px solid var(--border);padding-bottom:0.5rem;}
+    .tab-btn{background:none;border:none;color:var(--text3);cursor:pointer;padding:0.5rem 1rem;font-weight:600;font-size:0.85rem;transition:color 0.2s,border-bottom 0.2s;border-bottom:2px solid transparent;}
+    .tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
+    .hdr{margin-bottom:2rem;border-bottom:1px solid var(--border);padding-bottom:1.5rem;}
+    .hdr-top{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:1rem;}
+    h1{font-size:1.8rem;font-weight:700;letter-spacing:-0.02em;line-height:1.1;}
+    h1 span{color:var(--accent);}
+    .sub{color:var(--text3);font-size:0.7rem;font-family:var(--mono);margin-top:0.3rem;text-transform:uppercase;letter-spacing:0.08em;}
+    .yr-bar{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0.5rem;margin-bottom:1rem;}
+    .yr-stat{padding:0.8rem;background:var(--surface2);border:1px solid var(--border);border-radius:0.5rem;}
+    .yr-lbl{font-size:0.55rem;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:0.3rem;}
+    .yr-val{font-family:var(--mono);font-size:0.95rem;font-weight:700;color:var(--text);}
+    .yr-val.g{color:var(--green);}
+    .yr-val.b{color:var(--blue);}
+    .yr-val.r{color:var(--red);}
+    .cycles{display:flex;flex-direction:column;gap:0.4rem;}
+    .card{border:1px solid var(--border);border-radius:0.5rem;overflow:hidden;background:var(--surface);}
+    .card.open{border-color:var(--accent2);}
+    .card-hdr{width:100%;padding:0.9rem;display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:none;cursor:pointer;transition:background 0.15s;gap:0.7rem;}
+    .card-hdr:active{background:var(--surface2);}
+    .card.open .card-hdr{background:var(--surface2);}
+    .cleft{display:flex;align-items:center;gap:0.8rem;flex:1;min-width:0;}
+    .num-badge{background:var(--surface3);border:1px solid var(--border2);border-radius:0.3rem;padding:0.25rem 0.45rem;font-family:var(--mono);font-size:0.6rem;color:var(--accent);font-weight:700;}
+    .progress-bar{width:60px;height:6px;background:var(--surface3);border-radius:3px;overflow:hidden;border:1px solid var(--border2);}
+    .progress-fill{height:100%;background:var(--green);transition:width 0.3s;}
+    .progress-fill.warning{background:var(--yellow);}
+    .progress-fill.danger{background:var(--red);}
+    .cdate{font-family:var(--mono);font-size:0.7rem;color:var(--text2);}
+    .cstats{display:flex;align-items:center;gap:1rem;font-size:0.65rem;}
+    .st{display:flex;flex-direction:column;align-items:flex-end;}
+    .st-lbl{font-size:0.5rem;font-weight:700;color:var(--text3);text-transform:uppercase;}
+    .st-val{font-family:var(--mono);font-size:0.75rem;font-weight:700;color:var(--text);}
+    .st-val.g{color:var(--green);}
+    .st-val.d{color:var(--text3);}
+    .chev{width:12px;height:12px;color:var(--text3);transition:transform 0.2s;flex-shrink:0;}
+    .chev.rot{transform:rotate(180deg);}
+    .card-body{background:var(--surface);border-top:1px solid var(--border);}
+    .pane{padding:1rem;border-bottom:1px solid var(--border);}
+    .pane:last-child{border-bottom:none;}
+    .pane-ttl{font-size:0.55rem;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:0.8rem;}
+    .summary-box{background:var(--surface3);border:1px solid var(--border2);border-radius:0.4rem;padding:0.8rem;margin-bottom:1rem;}
+    .summary-row{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:0.6rem;}
+    .summary-row:last-child{margin-bottom:0;}
+    .summary-label{font-size:0.55rem;font-weight:700;color:var(--text3);text-transform:uppercase;}
+    .summary-value{font-family:var(--mono);font-size:0.95rem;font-weight:700;color:var(--text);}
+    .summary-value.acc{color:var(--accent);}
+    .summary-value.g{color:var(--green);}
+    .summary-value.r{color:var(--red);}
+    .summary-value.b{color:var(--blue);}
+    .income-input-group{display:flex;gap:0.4rem;margin-bottom:0.6rem;}
+    .income-input-group input,.income-input-group select{background:var(--surface);border:1px solid var(--border2);color:var(--text);padding:0.5rem;border-radius:0.3rem;font-family:var(--mono);font-size:0.75rem;}
+    .income-input-group input::placeholder{color:var(--text3);}
+    .income-btn{background:var(--accent);color:var(--bg);border:none;padding:0.5rem 0.8rem;border-radius:0.3rem;cursor:pointer;font-weight:700;font-size:0.7rem;transition:background 0.2s;}
+    .income-btn:active{background:var(--accent2);}
+    .income-list{display:flex;flex-direction:column;gap:0.4rem;}
+    .income-item{display:flex;justify-content:space-between;align-items:center;padding:0.6rem;background:var(--surface2);border:1px solid var(--border2);border-radius:0.3rem;}
+    .income-source{font-size:0.7rem;color:var(--text2);font-family:var(--mono);}
+    .income-amount{font-weight:700;color:var(--green);font-family:var(--mono);}
+    .income-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:0.8rem;padding:0.2rem 0.4rem;transition:color 0.2s;}
+    .income-del:active{color:var(--red);}
+    .bill-list{display:flex;flex-direction:column;gap:1px;}
+    .bill-btn{display:flex;align-items:flex-start;gap:0.6rem;padding:0.7rem;border-radius:0.3rem;cursor:pointer;border:none;background:transparent;width:100%;text-align:left;transition:background 0.15s;}
+    .bill-btn:active{background:var(--surface3);}
+    .bill-btn.paid{opacity:0.4;}
+    .bill-actions{display:flex;gap:0.3rem;align-items:center;}
+    .bill-del-btn{background:none;border:none;color:var(--text3);cursor:pointer;font-size:0.75rem;padding:0.2rem 0.3rem;transition:color 0.2s;flex-shrink:0;}
+    .bill-del-btn:hover{color:var(--red);}
+    .bill-note-btn{background:none;border:none;color:var(--text3);cursor:pointer;font-size:0.75rem;padding:0.2rem 0.3rem;transition:color 0.2s;flex-shrink:0;}
+    .bill-note-btn:hover{color:var(--accent);}
+    .chkbox{width:18px;height:18px;flex-shrink:0;border-radius:2px;border:1.5px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--green);margin-top:2px;}
+    .bill-btn.paid .chkbox{background:var(--green);opacity:0.7;border-color:var(--green);}
+    .binfo{flex:1;min-width:0;}
+    .brow{display:flex;align-items:baseline;justify-content:space-between;gap:0.5rem;margin-bottom:0.2rem;}
+    .bamt{font-size:0.8rem;font-weight:700;font-family:var(--mono);color:var(--text);}
+    .bill-btn.paid .bamt{text-decoration:line-through;color:var(--text3);}
+    .bdue{font-size:0.65rem;font-family:var(--mono);color:var(--text2);background:var(--surface3);padding:0.15rem 0.4rem;border-radius:2px;white-space:nowrap;}
+    .bdesc{font-size:0.68rem;color:var(--text3);line-height:1.3;margin-bottom:0.15rem;}
+    .bill-note{font-size:0.65rem;color:var(--text2);font-style:italic;margin-top:0.3rem;padding:0.3rem;background:var(--surface2);border-left:2px solid var(--accent);border-radius:2px;}
+    .cpill{display:inline-block;font-size:0.5rem;font-weight:700;text-transform:uppercase;padding:0.08rem 0.3rem;border-radius:2px;margin-left:0.25rem;vertical-align:middle;}
+    .c-debt{background:rgba(244,91,105,0.15);color:#f45b69;}
+    .c-housing{background:rgba(251,191,36,0.15);color:#d4a017;}
+    .c-groceries{background:rgba(34,197,94,0.15);color:#4ade80;}
+    .c-transportation{background:rgba(59,130,246,0.15);color:#60a5fa;}
+    .c-education{background:rgba(249,115,22,0.15);color:#fb923c;}
+    .c-subscription{background:rgba(99,102,241,0.15);color:#818cf8;}
+    .c-music{background:rgba(168,85,247,0.15);color:#c084fc;}
+    .badge-weekly{display:inline-block;font-size:0.5rem;font-weight:700;text-transform:uppercase;padding:0.06rem 0.25rem;border-radius:2px;margin-left:0.2rem;background:rgba(99,102,241,0.15);color:#818cf8;}
+    .badge-final{display:inline-block;font-size:0.5rem;font-weight:700;text-transform:uppercase;padding:0.06rem 0.25rem;border-radius:2px;margin-left:0.2rem;background:rgba(244,91,105,0.15);color:#f45b69;}
+    .badge-paycheck{display:inline-block;font-size:0.5rem;font-weight:700;text-transform:uppercase;padding:0.06rem 0.25rem;border-radius:2px;margin-left:0.2rem;background:rgba(34,197,94,0.15);color:#4ade80;}
+    .badge-side{display:inline-block;font-size:0.5rem;font-weight:700;text-transform:uppercase;padding:0.06rem 0.25rem;border-radius:2px;margin-left:0.2rem;background:rgba(124,109,250,0.15);color:#7c6dfa;}
+    .category-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:0.6rem;margin-bottom:1rem;}
+    .category-card{background:var(--surface2);border:1px solid var(--border2);border-radius:0.4rem;padding:0.6rem;text-align:center;}
+    .category-icon{font-size:1.2rem;margin-bottom:0.3rem;}
+    .category-name{font-size:0.6rem;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:0.2rem;}
+    .category-amount{font-family:var(--mono);font-size:0.8rem;font-weight:700;color:var(--text);}
+    .debt-tracker{background:var(--surface2);border:1px solid var(--border2);border-radius:0.4rem;padding:0.8rem;margin-bottom:1rem;}
+    .debt-item{display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-bottom:1px solid var(--border);margin-bottom:0.5rem;}
+    .debt-item:last-child{border-bottom:none;margin-bottom:0;}
+    .debt-name{font-size:0.7rem;font-weight:600;color:var(--text);}
+    .debt-status{display:flex;align-items:center;gap:0.3rem;}
+    .debt-badge{font-size:0.5rem;font-weight:700;background:rgba(244,91,105,0.15);color:#f45b69;padding:0.08rem 0.25rem;border-radius:2px;text-transform:uppercase;}
+    .debt-badge.paid{background:rgba(34,197,94,0.15);color:#22d3a0;}
+    .calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:0.3rem;margin-bottom:1rem;}
+    .calendar-day{aspect-ratio:1;background:var(--surface2);border:1px solid var(--border2);border-radius:0.3rem;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:0.6rem;padding:0.3rem;text-align:center;}
+    .calendar-day.paycheck{background:rgba(34,197,94,0.15);border-color:rgba(34,197,94,0.3);}
+    .calendar-day.bill{background:rgba(244,91,105,0.15);border-color:rgba(244,91,105,0.3);}
+    .export-btn{background:var(--accent);color:var(--bg);border:none;padding:0.6rem 1rem;border-radius:0.3rem;cursor:pointer;font-weight:700;font-size:0.75rem;transition:background 0.2s;}
+    .export-btn:active{background:var(--accent2);}
+    .modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;}
+    .modal-overlay.open{display:flex;}
+    .modal{background:var(--surface);border:1px solid var(--border);border-radius:0.5rem;padding:1.5rem;max-width:400px;width:90%;position:relative;}
+    .modal-title{font-size:1rem;font-weight:700;margin-bottom:1rem;}
+    .modal-close{position:absolute;top:1rem;right:1rem;background:none;border:none;color:var(--text3);cursor:pointer;font-size:1.5rem;}
+    .modal-input{width:100%;background:var(--surface2);border:1px solid var(--border2);color:var(--text);padding:0.6rem;border-radius:0.3rem;margin-bottom:0.8rem;font-family:var(--mono);font-size:0.75rem;}
+    .modal-input::placeholder{color:var(--text3);}
+    .modal-input:focus{outline:none;border-color:var(--accent);}
+    .modal-buttons{display:flex;gap:0.5rem;}
+    .modal-btn{flex:1;padding:0.6rem;border:none;border-radius:0.3rem;cursor:pointer;font-weight:700;font-size:0.75rem;}
+    .modal-btn.primary{background:var(--accent);color:var(--bg);}
+    .modal-btn.secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border2);}
+    .goal-progress{height:8px;background:var(--surface3);border-radius:4px;overflow:hidden;}
+    .goal-progress-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--green));transition:width 0.3s;}
+    .footer-note{margin-top:1.5rem;text-align:center;font-size:0.65rem;color:var(--text3);font-family:var(--mono);}
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+  const { useState, useMemo, useEffect } = React;
+
+const CYCLE_DATA = [
+{num:5,paydate:new Date(2026,2,6),bills:[
+{name:‘Debt: AT&T’,amount:232.10,cat:‘debt’,due:new Date(2026,2,6)},
+{name:‘Debt: Consolidation Payment – NDR’,amount:145.50,cat:‘debt’,due:new Date(2026,2,6)},
+{name:‘Debt: Credit Card Payments’,amount:463.93,cat:‘debt’,due:new Date(2026,2,6)},
+{name:‘Debt Collection: True Accord’,amount:330,cat:‘debt’,due:new Date(2026,2,6)},
+{name:‘Groceries: Meal Subscription Service’,amount:125,cat:‘groceries’,weekly:true,due:new Date(2026,2,10)},
+{name:‘Groceries: Meal Subscription Service’,amount:125,cat:‘groceries’,weekly:true,due:new Date(2026,2,17)},
+{name:‘Music Lessons’,amount:65,cat:‘music’,due:new Date(2026,2,6)},
+{name:‘Subscription: NZXT Flex’,amount:95,cat:‘subscription’,due:new Date(2026,2,6)},
+{name:‘Transportation: Gasoline’,amount:200,cat:‘transportation’,due:new Date(2026,2,6)},
+]},
+{num:6,paydate:new Date(2026,2,20),bills:[
+{name:‘Debt: AT&T’,amount:232.10,cat:‘debt’,due:new Date(2026,2,20)},
+{name:‘Debt: Consolidation Payment – NDR’,amount:145.50,cat:‘debt’,due:new Date(2026,2,20)},
+{name:‘Debt: UM Tuition’,amount:210,cat:‘debt’,due:new Date(2026,2,20)},
+{name:‘Debt Collection: Firstsource’,amount:228.80,cat:‘debt’,due:new Date(2026,2,20)},
+{name:‘Debt Collection: January (EZX3-YJTA)’,amount:57.36,cat:‘debt’,due:new Date(2026,2,20)},
+{name:‘Debt Collection: January (OP81-HGUY)’,amount:47.94,cat:‘debt’,due:new Date(2026,2,20)},
+{name:‘Debt Collection: January (PRR3-YRGP)’,amount:49.40,cat:‘debt’,due:new Date(2026,2,20)},
+{name:‘Debt Collection: January (S34S-9LMK)’,amount:80.28,cat:‘debt’,due:new Date(2026,2,20)},
+{name:‘Debt Collection: Williams & Fudge’,amount:528.85,cat:‘debt’,due:new Date(2026,2,20)},
+{name:‘Education: IQRA Network’,amount:230,cat:‘education’,due:new Date(2026,3,1)},
+{name:‘Groceries: Meal Subscription Service’,amount:125,cat:‘groceries’,weekly:true,due:new Date(2026,2,24)},
+{name:‘Groceries: Meal Subscription Service’,amount:125,cat:‘groceries’,weekly:true,due:new Date(2026,3,3)},
+{name:‘Housing: Internet’,amount:70,cat:‘housing’,due:new Date(2026,3,5)},
+{name:‘Music Lessons’,amount:65,cat:‘music’,due:new Date(2026,2,20)},
+{name:‘Transportation: Gasoline’,amount:200,cat:‘transportation’,due:new Date(2026,2,20)},
+]},
+{num:7,paydate:new Date(2026,3,3),bills:[
+{name:‘Debt: AT&T’,amount:232.10,cat:‘debt’,due:new Date(2026,3,3)},
+{name:‘Debt: Consolidation Payment – NDR’,amount:145.50,cat:‘debt’,due:new Date(2026,3,3)},
+{name:‘Debt: UM Tuition’,amount:210,cat:‘debt’,due:new Date(2026,3,3)},
+{name:‘Debt Collection: January (EZX3-YJTA)’,amount:57.36,cat:‘debt’,due:new Date(2026,3,3)},
+{name:‘Debt Collection: January (OP81-HGUY)’,amount:47.94,cat:‘debt’,due:new Date(2026,3,3)},
+{name:‘Debt Collection: January (PRR3-YRGP)’,amount:49.40,cat:‘debt’,due:new Date(2026,3,3)},
+{name:‘Debt Collection: January (S34S-9LMK)’,amount:80.28,cat:‘debt’,due:new Date(2026,3,3)},
+{name:‘Debt Collection: indebted’,amount:100.99,cat:‘debt’,due:new Date(2026,3,3)},
+{name:‘Debt Collection: indebted’,amount:98.44,cat:‘debt’,due:new Date(2026,3,3)},
+{name:‘Groceries: Meal Subscription Service’,amount:125,cat:‘groceries’,weekly:true,due:new Date(2026,3,7)},
+{name:‘Groceries: Meal Subscription Service’,amount:125,cat:‘groceries’,weekly:true,due:new Date(2026,3,14)},
+{name:‘Music Lessons’,amount:65,cat:‘music’,due:new Date(2026,3,3)},
+{name:‘Subscription: NZXT Flex’,amount:95,cat:‘subscription’,due:new Date(2026,3,3)},
+{name:‘Transportation: Gasoline’,amount:200,cat:‘transportation’,due:new Date(2026,3,3)},
+{name:‘Transportation: Maintenance’,amount:130,cat:‘transportation’,due:new Date(2026,3,10)},
+]},
+{num:8,paydate:new Date(2026,3,17),bills:[
+{name:‘Debt: Consolidation Payment – NDR’,amount:145.50,cat:‘debt’,due:new Date(2026,3,17)},
+{name:‘Debt: UM Tuition’,amount:210,cat:‘debt’,due:new Date(2026,3,17)},
+{name:‘Debt Collection: January (EZX3-YJTA)’,amount:57.36,cat:‘debt’,due:new Date(2026,3,17)},
+{name:‘Debt Collection: January (OP81-HGUY)’,amount:47.94,cat:‘debt’,due:new Date(2026,3,17)},
+{name:‘Debt Collection: January (PRR3-YRGP)’,amount:49.40,cat:‘debt’,due:new Date(2026,3,17)},
+{name:‘Debt Collection: January (S34S-9LMK)’,amount:80.28,cat:‘debt’,due:new Date(2026,3,17),final:true},
+{name:‘Education: IQRA Network’,amount:230,cat:‘education’,due:new Date(2026,4,1)},
+{name:‘Groceries: Meal Subscription Service’,amount:125,cat:‘groceries’,weekly:true,due:new Date(2026,3,21)},
+{name:‘Groceries: Meal Subscription Service’,amount:125,cat:‘groceries’,weekly:true,due:new Date(2026,3,28)},
+{name:‘Music Lessons’,amount:65,cat:‘music’,due:new Date(2026,3,17)},
+{name:‘Transportation: Gasoline’,amount:200,cat:‘transportation’,due:new Date(2026,3,17)},
+]},
+{num:9,paydate:new Date(2026,4,1),bills:[
+{name:‘Debt: AT&T’,amount:232.10,cat:‘debt’,due:new Date(2026,4,1)},
+{name:‘Debt: Consolidation Payment – NDR’,amount:145.50,cat:‘debt’,due:new Date(2026,4,1)},
+{name:‘Debt: UM Tuition’,amount:210,cat:‘debt’,due:new Date(2026,4,1)},
+{name:‘Debt Collection: January (EZX3-YJTA)’,amount:57.36,cat:‘debt’,due:new Date(2026,4,1)},
+{name:‘Debt Collection: January (OP81-HGUY)’,amount:47.94,cat:‘debt’,due:new Date(2026,4,1)},
+{name:‘Debt Collection: January (PRR3-YRGP)’,amount:49.40,cat:‘debt’,due:new Date(2026,4,1)},
+{name:‘Debt Collection: indebted’,amount:100.99,cat:‘debt’,due:new Date(2026,4,1)},
+{name:‘Groceries: Meal Subscription Service’,amount:125,cat:‘groceries’,weekly:true,due:new Date(2026,4,5)},
+{name:‘Groceries: Meal Subscription Service’,amount:125,cat:‘groceries’,weekly:true,due:new Date(2026,4,12)},
+{name:‘Housing: Internet’,amount:70,cat:‘housing’,due:new Date(2026,4,5)},
+{name:‘Subscription: NZXT Flex’,amount:95,cat:‘subscription’,due:new Date(2026,4,1)},
+{name:‘Transportation: Gasoline’,amount:200,cat:‘transportation’,due:new Date(2026,4,1)},
+{name:‘Transportation: Maintenance’,amount:130,cat:‘transportation’,due:new Date(2026,4,8)},
+]},
+];
+
+function buildCycles(){
+return CYCLE_DATA.map((data,idx)=>{
+const bills=data.bills.map((b,bi)=>({
+id:‘bill-’+idx+’-’+bi,
+name:b.name,
+amount:b.amount,
+cat:b.cat,
+weekly:b.weekly||false,
+final:b.final||false,
+due:b.due
+}));
+bills.sort((a,b)=>a.name.localeCompare(b.name));
+const total=bills.reduce((s,b)=>s+b.amount,0);
+return{
+id:‘cycle-’+idx,
+num:data.num,
+paydate:data.paydate,
+bills:bills,
+total:total,
+weekly:total/2
+};
+});
+}
+
+const fmt=d=>d.toLocaleDateString(‘en-US’,{month:‘short’,day:‘numeric’});
+const fmtShort=d=>d.toLocaleDateString(‘en-US’,{month:‘2-digit’,day:‘2-digit’});
+const money=n=>’$’+n.toFixed(2);
+
+function App(){
+const cycles=useMemo(buildCycles,[]);
+const [tab,setTab]=useState(‘cycles’);
+const [cs,setCs]=useState(()=>{
+const s=localStorage.getItem(‘ftState’);
+if(s){try{return JSON.parse(s);}catch(e){}}
+const state={};
+cycles.forEach(c=>{state[c.id]={open:false,paid:{},income:[],customBills:[],notes:{},goal:0};});
+return state;
+});
+const [showNoteModal,setShowNoteModal]=useState(null);
+const [noteText,setNoteText]=useState(’’);
+const [showGoalModal,setShowGoalModal]=useState(null);
+const [goalAmount,setGoalAmount]=useState(’’);
+
+```
+useEffect(()=>{
+  localStorage.setItem('ftState',JSON.stringify(cs));
+},[cs]);
+
+const togglePaid=(cid,bid)=>setCs(p=>({...p,[cid]:{...p[cid],paid:{...p[cid].paid,[bid]:!p[cid].paid[bid]}}}));
+const toggleOpen=(cid)=>setCs(p=>({...p,[cid]:{...p[cid],open:!p[cid].open}}));
+
+const addIncome=(cid,source,amount,type)=>{
+  setCs(p=>({...p,[cid]:{...p[cid],income:[...p[cid].income,{id:Date.now(),source,amount,type}]}}));
+};
+
+const delIncome=(cid,incomeId)=>{
+  setCs(p=>({...p,[cid]:{...p[cid],income:p[cid].income.filter(i=>i.id!==incomeId)}}));
+};
+
+const addBill=(cid,name,amount)=>{
+  setCs(p=>({...p,[cid]:{...p[cid],customBills:[...p[cid].customBills,{id:'custom-'+Date.now(),name,amount,cat:'',custom:true}]}}));
+};
+
+const delBill=(cid,billId)=>{
+  setCs(p=>({...p,[cid]:{...p[cid],customBills:p[cid].customBills.filter(b=>b.id!==billId)}}));
+};
+
+const setNote=(cid,bid,note)=>{
+  setCs(p=>({...p,[cid]:{...p[cid],notes:{...p[cid].notes,[bid]:note}}}));
+};
+
+const setGoal=(cid,goal)=>{
+  setCs(p=>({...p,[cid]:{...p[cid],goal}}));
+};
+
+const categoryTotals={};
+const debtItems=[];
+cycles.forEach((c,idx)=>{
+  c.bills.forEach(b=>{
+    categoryTotals[b.cat]=(categoryTotals[b.cat]||0)+b.amount;
+    if(b.cat==='debt'){
+      const isPaid=!!cs[c.id].paid[b.id];
+      debtItems.push({name:b.name,amount:b.amount,paid:isPaid,final:b.final,id:b.id,cid:c.id});
+    }
+  });
+  cs[c.id].customBills.forEach(b=>{
+    categoryTotals['custom']=(categoryTotals['custom']||0)+b.amount;
+  });
+});
+
+const yPaycheck=cycles.reduce((s,c)=>s+cs[c.id].income.filter(i=>i.type==='paycheck').reduce((ss,i)=>ss+i.amount,0),0);
+const ySideIncome=cycles.reduce((s,c)=>s+cs[c.id].income.filter(i=>i.type==='side').reduce((ss,i)=>ss+i.amount,0),0);
+const yTotalIncome=yPaycheck+ySideIncome;
+const yBills=cycles.reduce((s,c)=>s+c.total+cs[c.id].customBills.reduce((ss,b)=>ss+b.amount,0),0);
+const yRemaining=yBills-yTotalIncome;
+
+const debtPaid=debtItems.filter(d=>d.paid).reduce((s,d)=>s+d.amount,0);
+const debtTotal=debtItems.reduce((s,d)=>s+d.amount,0);
+
+const exportData=()=>{
+  const data=cycles.map(c=>{
+    const total=c.total+cs[c.id].customBills.reduce((s,b)=>s+b.amount,0);
+    const paid=c.bills.filter(b=>cs[c.id].paid[b.id]).reduce((s,b)=>s+b.amount,0);
+    const income=cs[c.id].income.reduce((s,i)=>s+i.amount,0);
+    return{
+      cycle:c.num,
+      date:c.paydate.toISOString().split('T')[0],
+      totalBills:total,
+      paidBills:paid,
+      totalIncome:income,
+      remaining:total-paid-income
+    };
+  });
+  const csv=['Cycle,Date,Total Bills,Paid,Total Income,Remaining',...data.map(d=>`${d.cycle},${d.date},${d.totalBills},${d.paidBills},${d.totalIncome},${d.remaining}`)].join('\n');
+  const blob=new Blob([csv],{type:'text/csv'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download='financial-tracker-'+new Date().toISOString().split('T')[0]+'.csv';
+  a.click();
+};
+
+return (
+  <div className="wrap">
+    <div className="tabs">
+      <button className={'tab-btn'+(tab==='cycles'?' active':'')} onClick={()=>setTab('cycles')}>Cycles</button>
+      <button className={'tab-btn'+(tab==='analytics'?' active':'')} onClick={()=>setTab('analytics')}>Analytics</button>
+      <button className={'tab-btn'+(tab==='calendar'?' active':'')} onClick={()=>setTab('calendar')}>Calendar</button>
+    </div>
+
+    {tab==='cycles'&&(
+      <>
+        <div className="hdr">
+          <div className="hdr-top">
+            <div>
+              <h1>Financial<span> Tracker</span></h1>
+              <p className="sub">22 Paychecks · Mar–Dec 2026</p>
+            </div>
+          </div>
+          <div className="yr-bar">
+            <div className="yr-stat"><div className="yr-lbl">Total Bills</div><div className="yr-val">{money(yBills)}</div></div>
+            <div className="yr-stat"><div className="yr-lbl">Paycheck Income</div><div className="yr-val g">{money(yPaycheck)}</div></div>
+            <div className="yr-stat"><div className="yr-lbl">Side Income</div><div className="yr-val b">{money(ySideIncome)}</div></div>
+            <div className="yr-stat"><div className="yr-lbl">Still Needed</div><div className={'yr-val '+(yRemaining>0?'r':'g')}>{money(Math.max(0,yRemaining))}</div></div>
+          </div>
+        </div>
+
+        <div className="cycles">
+          {cycles.map(cycle=>{
+            const cst=cs[cycle.id];
+            const paycheckIncome=cst.income.filter(i=>i.type==='paycheck').reduce((s,i)=>s+i.amount,0);
+            const sideIncome=cst.income.filter(i=>i.type==='side').reduce((s,i)=>s+i.amount,0);
+            const totalIncome=paycheckIncome+sideIncome;
+            const customBillsTotal=cst.customBills.reduce((s,b)=>s+b.amount,0);
+            const paidAmt=cycle.bills.filter(b=>cst.paid[b.id]).reduce((s,b)=>s+b.amount,0);
+            const cycleTotal=cycle.total+customBillsTotal;
+            const remaining=cycleTotal-paidAmt-totalIncome;
+            const isOpen=cst.open;
+            const progressPct=Math.min(100,Math.round((paidAmt/cycleTotal)*100));
+            return (
+              <div key={cycle.id} className={'card'+(isOpen?' open':'')}>
+                <button className="card-hdr" onClick={()=>toggleOpen(cycle.id)}>
+                  <div className="cleft">
+                    <span className="num-badge">#{cycle.num}</span>
+                    <span className="cdate">{fmt(cycle.paydate)}</span>
+                    <div className="progress-bar">
+                      <div className={'progress-fill'+(remaining>0?' danger':remaining<-500?' warning':'')} style={{width:progressPct+'%'}}></div>
+                    </div>
+                  </div>
+                  <div className="cstats">
+                    <div className="st"><span className="st-lbl">Bills</span><span className="st-val">{money(cycleTotal)}</span></div>
+                    <div className="st"><span className="st-val d">{money(remaining)}</span></div>
+                  </div>
+                  <svg className={'chev'+(isOpen?' rot':'')} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/>
+                  </svg>
+                </button>
+                {isOpen&&(
+                  <div className="card-body">
+                    <div className="pane">
+                      <div className="summary-box">
+                        <div className="summary-row">
+                          <span className="summary-label">Total Bills</span>
+                          <span className="summary-value">{money(cycleTotal)}</span>
+                        </div>
+                        <div className="summary-row">
+                          <span className="summary-label">Paid Bills</span>
+                          <span className="summary-value g">{money(paidAmt)}</span>
+                        </div>
+                        <div className="summary-row">
+                          <span className="summary-label">Paycheck Income</span>
+                          <span className="summary-value g">{money(paycheckIncome)}</span>
+                        </div>
+                        <div className="summary-row">
+                          <span className="summary-label">Side Income</span>
+                          <span className="summary-value b">{money(sideIncome)}</span>
+                        </div>
+                        <div className="summary-row">
+                          <span className="summary-label">Still Needed</span>
+                          <span className={'summary-value '+(remaining>0?'acc':'g')}>{money(remaining)}</span>
+                        </div>
+                        <div className="summary-row">
+                          <span className="summary-label">Goal</span>
+                          <span className="summary-value b">{money(cst.goal)}</span>
+                        </div>
+                      </div>
+                      <button className="income-btn" style={{width:'100%'}} onClick={()=>{setShowGoalModal(cycle.id);setGoalAmount(cst.goal.toString());}}>Set Income Goal</button>
+                    </div>
+
+                    <div className="pane">
+                      <div className="pane-ttl">Add Income</div>
+                      <IncomeInput onAdd={(src,amt,typ)=>addIncome(cycle.id,src,amt,typ)}/>
+                      {totalIncome>0&&(
+                        <div className="income-list" style={{marginTop:'0.8rem'}}>
+                          {cst.income.map(inc=>(
+                            <div key={inc.id} className="income-item">
+                              <div>
+                                <div className="income-source">{inc.source}</div>
+                                <span className={'badge-'+(inc.type||'paycheck')} style={{marginLeft:0}}>{inc.type||'paycheck'}</span>
+                              </div>
+                              <div style={{display:'flex',gap:'0.5rem',alignItems:'center'}}>
+                                <span className="income-amount">{money(inc.amount)}</span>
+                                <button className="income-del" onClick={()=>delIncome(cycle.id,inc.id)}>×</button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="pane">
+                      <div className="pane-ttl">Bills Due</div>
+                      <div className="bill-list">
+                        {cycle.bills.map(bill=>{
+                          const isPaid=!!cst.paid[bill.id];
+                          const hasNote=!!cst.notes[bill.id];
+                          return(
+                            <div key={bill.id}>
+                              <div className={'bill-btn'+(isPaid?' paid':'')} onClick={()=>togglePaid(cycle.id,bill.id)}>
+                                <div className="chkbox">{isPaid?'✓':''}</div>
+                                <div className="binfo">
+                                  <div className="brow">
+                                    <span className="bamt">{money(bill.amount)}</span>
+                                    <span className="bdue">{fmtShort(bill.due)}</span>
+                                  </div>
+                                  <div className="bdesc">{bill.name}{bill.weekly&&<span className='badge-weekly'>[W]</span>}{bill.final&&<span className='badge-final'>✓</span>}{bill.cat&&<span className={'cpill c-'+bill.cat}>{bill.cat.substring(0,3)}</span>}</div>
+                                </div>
+                                <button className="bill-note-btn" onClick={(e)=>{e.stopPropagation();setShowNoteModal(bill.id);setNoteText(cst.notes[bill.id]||'');}}>📝</button>
+                              </div>
+                              {hasNote&&<div className="bill-note">{cst.notes[bill.id]}</div>}
+                            </div>
+                          );
+                        })}
+                        {cst.customBills.map(bill=>(
+                          <div key={bill.id} className="bill-btn">
+                            <div className="chkbox"></div>
+                            <div className="binfo">
+                              <div className="brow">
+                                <span className="bamt">{money(bill.amount)}</span>
+                              </div>
+                              <div className="bdesc">{bill.name}<span className={'cpill c-subscription'} style={{background:'rgba(168,85,247,0.15)',color:'#c084fc'}}>cst</span></div>
+                            </div>
+                            <div className="bill-actions">
+                              <button className="bill-del-btn" onClick={()=>delBill(cycle.id,bill.id)} title="Remove">−</button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <AddBillForm onAdd={(name,amt)=>addBill(cycle.id,name,amt)}/>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </>
+    )}
+
+    {tab==='analytics'&&(
+      <>
+        <div className="hdr">
+          <h1>Financial<span> Analytics</span></h1>
+          <button className="export-btn" onClick={exportData} style={{marginTop:'1rem'}}>📥 Export to CSV</button>
+        </div>
+
+        <div className="pane">
+          <div className="pane-ttl">Spending by Category</div>
+          <div className="category-grid">
+            {Object.entries(categoryTotals).sort((a,b)=>b[1]-a[1]).map(([cat,amt])=>{
+              const icons={debt:'💳',housing:'🏠',groceries:'🛒',transportation:'🚗',education:'📚',subscription:'📺',music:'🎵',custom:'⚙️'};
+              return(
+                <div key={cat} className="category-card">
+                  <div className="category-icon">{icons[cat]||'📊'}</div>
+                  <div className="category-name">{cat}</div>
+                  <div className="category-amount">{money(amt)}</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="pane">
+          <div className="pane-ttl">Debt Payoff Progress</div>
+          <div className="debt-tracker">
+            <div style={{display:'flex',justifyContent:'space-between',marginBottom:'1rem'}}>
+              <div>
+                <div className="summary-label">Paid</div>
+                <div className="summary-value g">{money(debtPaid)}</div>
+              </div>
+              <div>
+                <div className="summary-label">Total Debt</div>
+                <div className="summary-value">{money(debtTotal)}</div>
+              </div>
+              <div>
+                <div className="summary-label">Progress</div>
+                <div className="summary-value b">{debtTotal>0?Math.round((debtPaid/debtTotal)*100):0}%</div>
+              </div>
+            </div>
+            <div className="goal-progress" style={{height:'12px',marginBottom:'1rem'}}>
+              <div className="goal-progress-fill" style={{width:(debtTotal>0?Math.round((debtPaid/debtTotal)*100):0)+'%'}}></div>
+            </div>
+            {debtItems.filter(d=>d.paid||d.final).length>0&&(
+              <>
+                <div className="pane-ttl" style={{marginTop:'1rem',marginBottom:'0.5rem'}}>Completed Debts</div>
+                {debtItems.filter(d=>d.paid||d.final).map(d=>(
+                  <div key={d.id} className="debt-item">
+                    <span className="debt-name">{d.name}</span>
+                    <div className="debt-status">
+                      <span className={'debt-badge paid'}>✓ Paid</span>
+                      <span style={{fontWeight:700,marginLeft:'0.5rem'}}>{money(d.amount)}</span>
+                    </div>
+                  </div>
+                ))}
+              </>
+            )}
+          </div>
+        </div>
+      </>
+    )}
+
+    {tab==='calendar'&&(
+      <>
+        <div className="hdr">
+          <h1>Paycheck<span> Calendar</span></h1>
+        </div>
+        <div className="pane">
+          <div className="pane-ttl">Mar - May 2026 Overview</div>
+          <div style={{marginBottom:'1.5rem'}}>
+            <div style={{display:'flex',gap:'1rem',marginBottom:'1rem',fontSize:'0.7rem'}}>
+              <div style={{display:'flex',gap:'0.3rem',alignItems:'center'}}>
+                <div style={{width:'16px',height:'16px',background:'rgba(34,197,94,0.15)',borderRadius:'2px'}}></div>
+                <span>Paychecks</span>
+              </div>
+              <div style={{display:'flex',gap:'0.3rem',alignItems:'center'}}>
+                <div style={{width:'16px',height:'16px',background:'rgba(244,91,105,0.15)',borderRadius:'2px'}}></div>
+                <span>Bill Due Dates</span>
+              </div>
+            </div>
+          </div>
+          {cycles.slice(0,5).map((c,idx)=>(
+            <div key={idx} style={{marginBottom:'1.5rem'}}>
+              <div style={{fontSize:'0.7rem',fontWeight:700,color:'var(--text3)',textTransform:'uppercase',marginBottom:'0.5rem'}}>Cycle {c.num}</div>
+              <div className="calendar-grid">
+                {[...Array(7)].map((x,d)=>{
+                  const dateInCycle=new Date(c.paydate);
+                  dateInCycle.setDate(dateInCycle.getDate()-3+d);
+                  const isPaycheck=dateInCycle.getTime()===c.paydate.getTime();
+                  const hasBill=c.bills.some(b=>b.due.getTime()===dateInCycle.getTime());
+                  return(
+                    <div key={d} className={'calendar-day'+(isPaycheck?' paycheck':'')+(hasBill?' bill':'')}>
+                      <div style={{fontSize:'0.5rem'}}>{dateInCycle.getDate()}</div>
+                      {isPaycheck&&<div style={{fontSize:'0.4rem',fontWeight:700}}>PC</div>}
+                      {hasBill&&<div style={{fontSize:'0.4rem',fontWeight:700}}>BILLS</div>}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      </>
+    )}
+
+    <NoteModal show={showNoteModal} noteText={noteText} onSave={(note)=>{if(showNoteModal){const cid=Object.keys(cs).find(c=>cs[c].notes[showNoteModal]!==undefined)||Object.keys(cs)[0];setNote(cid,showNoteModal,note);}setShowNoteModal(null);}} onClose={()=>setShowNoteModal(null)} onChange={setNoteText}/>
+    <GoalModal show={showGoalModal} amount={goalAmount} onSave={(amt)=>{if(showGoalModal)setGoal(showGoalModal,parseFloat(amt)||0);setShowGoalModal(null);}} onClose={()=>setShowGoalModal(null)} onChange={setGoalAmount}/>
+
+    <p className="footer-note">tap bill to mark paid · add income to reduce amount needed · export data for analysis · track debt progress</p>
+  </div>
+);
+```
+
+}
+
+function IncomeInput({onAdd}){
+const [input,setInput]=useState(’’);
+const [type,setType]=useState(‘paycheck’);
+const handleAdd=()=>{
+const match=input.match(/^([a-zA-Z\s&0-9]+?)\s*[-–]\s*$?([\d,]+(?:.\d{2})?)\s*$/);
+if(!match)return;
+const source=match[1].trim();
+const amount=parseFloat(match[2].replace(/,/g,’’));
+if(source&&amount>0){
+onAdd(source,amount,type);
+setInput(’’);
+}
+};
+return(
+<div className="income-input-group">
+<input type=“text” placeholder=“Amazon Flex - 90” value={input} onChange={e=>setInput(e.target.value)} onKeyPress={e=>e.key===‘Enter’&&handleAdd()}/>
+<select value={type} onChange={e=>setType(e.target.value)}>
+<option value="paycheck">Paycheck</option>
+<option value="side">Side Income</option>
+</select>
+<button className="income-btn" onClick={handleAdd}>Add</button>
+</div>
+);
+}
+
+function AddBillForm({onAdd}){
+const [input,setInput]=useState(’’);
+const handleAdd=()=>{
+const match=input.match(/^([a-zA-Z\s&0-9:]+?)\s*[-–]\s*$?([\d,]+(?:.\d{2})?)\s*$/);
+if(!match)return;
+const name=match[1].trim();
+const amount=parseFloat(match[2].replace(/,/g,’’));
+if(name&&amount>0){
+onAdd(name,amount);
+setInput(’’);
+}
+};
+return(
+<div style={{marginTop:‘0.8rem’,paddingTop:‘0.8rem’,borderTop:‘1px solid var(–border)’}}>
+<div style={{fontSize:‘0.55rem’,fontWeight:700,color:‘var(–text3)’,textTransform:‘uppercase’,marginBottom:‘0.6rem’}}>Add Custom Bill</div>
+<div className="income-input-group">
+<input type=“text” placeholder=“Bill name - 50” value={input} onChange={e=>setInput(e.target.value)} onKeyPress={e=>e.key===‘Enter’&&handleAdd()}/>
+<button className="income-btn" onClick={handleAdd}>Add</button>
+</div>
+</div>
+);
+}
+
+function NoteModal({show,noteText,onSave,onClose,onChange}){
+return(
+<div className={‘modal-overlay’+(show?’ open’:’’)}>
+<div className="modal">
+<button className="modal-close" onClick={onClose}>×</button>
+<div className="modal-title">Bill Note</div>
+<textarea className=“modal-input” style={{minHeight:‘100px’,fontFamily:‘var(–sans)’,resize:‘vertical’}} value={noteText} onChange={e=>onChange(e.target.value)} placeholder=“Add notes about this bill…”></textarea>
+<div className="modal-buttons">
+<button className="modal-btn secondary" onClick={onClose}>Cancel</button>
+<button className=“modal-btn primary” onClick={()=>onSave(noteText)}>Save</button>
+</div>
+</div>
+</div>
+);
+}
+
+function GoalModal({show,amount,onSave,onClose,onChange}){
+return(
+<div className={‘modal-overlay’+(show?’ open’:’’)}>
+<div className="modal">
+<button className="modal-close" onClick={onClose}>×</button>
+<div className="modal-title">Set Income Goal</div>
+<input type=“number” className=“modal-input” value={amount} onChange={e=>onChange(e.target.value)} placeholder=“Goal amount”/>
+<div className="modal-buttons">
+<button className="modal-btn secondary" onClick={onClose}>Cancel</button>
+<button className=“modal-btn primary” onClick={()=>onSave(amount)}>Set Goal</button>
+</div>
+</div>
+</div>
+);
+}
+
+ReactDOM.createRoot(document.getElementById(‘root’)).render(<App/>);
+</script>
+
+</body>
+</html>
