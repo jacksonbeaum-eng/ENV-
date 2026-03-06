@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Financial Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    :root{--bg:#0a0a0f;--surface:#111118;--surface2:#18181f;--surface3:#1e1e28;--border:#2a2a38;--border2:#353548;--text:#f0f0ff;--text2:#9898b8;--text3:#5a5a78;--accent:#7c6dfa;--accent2:#5b4edd;--green:#22d3a0;--red:#f45b69;--mono:'Space Mono',monospace;--sans:'DM Sans',sans-serif;}
+    *{margin:0;padding:0;box-sizing:border-box;}
+    html,body,#root{width:100%;height:100%;}
+    body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;transition:background 0.2s,color 0.2s;-webkit-font-smoothing:antialiased;}
+    .wrap{max-width:100%;padding:1rem 1rem 2rem;position:relative;z-index:1;}
+    .hdr{margin-bottom:2rem;border-bottom:1px solid var(--border);padding-bottom:1.5rem;}
+    .hdr-top{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:1rem;}
+    h1{font-size:1.8rem;font-weight:700;letter-spacing:-0.02em;line-height:1.1;}
+    h1 span{color:var(--accent);}
+    .sub{color:var(--text3);font-size:0.7rem;font-family:var(--mono);margin-top:0.3rem;text-transform:uppercase;letter-spacing:0.08em;}
+    .yr-bar{display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin-bottom:1rem;}
+    .yr-stat{padding:0.8rem;background:var(--surface2);border:1px solid var(--border);border-radius:0.5rem;}
+    .yr-lbl{font-size:0.55rem;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:0.3rem;}
+    .yr-val{font-family:var(--mono);font-size:0.95rem;font-weight:700;color:var(--text);}
+    .yr-val.g{color:var(--green);}
+    .cycles{display:flex;flex-direction:column;gap:0.4rem;}
+    .card{border:1px solid var(--border);border-radius:0.5rem;overflow:hidden;background:var(--surface);}
+    .card.open{border-color:var(--accent2);}
+    .card-hdr{width:100%;padding:0.9rem;display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:none;cursor:pointer;transition:background 0.15s;gap:0.7rem;}
+    .card-hdr:active{background:var(--surface2);}
+    .card.open .card-hdr{background:var(--surface2);}
+    .cleft{display:flex;align-items:center;gap:0.8rem;flex:1;min-width:0;}
+    .num-badge{background:var(--surface3);border:1px solid var(--border2);border-radius:0.3rem;padding:0.25rem 0.45rem;font-family:var(--mono);font-size:0.6rem;color:var(--accent);font-weight:700;}
+    .cdate{font-family:var(--mono);font-size:0.7rem;color:var(--text2);}
+    .cstats{display:flex;align-items:center;gap:1rem;font-size:0.65rem;}
+    .st{display:flex;flex-direction:column;align-items:flex-end;}
+    .st-lbl{font-size:0.5rem;font-weight:700;color:var(--text3);text-transform:uppercase;}
+    .st-val{font-family:var(--mono);font-size:0.75rem;font-weight:700;color:var(--text);}
+    .st-val.g{color:var(--green);}
+    .st-val.d{color:var(--text3);}
+    .chev{width:12px;height:12px;color:var(--text3);transition:transform 0.2s;flex-shrink:0;}
+    .chev.rot{transform:rotate(180deg);}
+    .card-body{background:var(--surface);border-top:1px solid var(--border);}
+    .pane{padding:1rem;border-bottom:1px solid var(--border);}
+    .pane:last-child{border-bottom:none;}
+    .pane-ttl{font-size:0.55rem;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:0.8rem;}
+    .weekly-box{background:var(--surface3);border:1px solid var(--border2);border-radius:0.4rem;padding:0.8rem;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:flex-end;}
+    .weekly-label{font-size:0.55rem;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:0.3rem;}
+    .weekly-value{font-family:var(--mono);font-size:1.1rem;font-weight:700;color:var(--accent);}
+    .bill-list{display:flex;flex-direction:column;gap:1px;}
+    .bill-btn{display:flex;align-items:flex-start;gap:0.6rem;padding:0.7rem;border-radius:0.3rem;cursor:pointer;border:none;background:transparent;width:100%;text-align:left;transition:background 0.15s;}
+    .bill-btn:active{background:var(--surface3);}
+    .bill-btn.paid{opacity:0.4;}
+    .chkbox{width:18px;height:18px;flex-shrink:0;border-radius:2px;border:1.5px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--green);margin-top:2px;}
+    .bill-btn.paid .chkbox{background:var(--green);opacity:0.7;border-color:var(--green);}
+    .binfo{flex:1;min-width:0;}
+    .brow{display:flex;align-items:baseline;justify-content:space-between;gap:0.5rem;margin-bottom:0.2rem;}
+    .bamt{font-size:0.8rem;font-weight:700;font-family:var(--mono);color:var(--text);}
+    .bill-btn.paid .bamt{text-decoration:line-through;color:var(--text3);}
+    .bdue{font-size:0.65rem;font-family:var(--mono);color:var(--text2);background:var(--surface3);padding:0.15rem 0.4rem;border-radius:2px;white-space:nowrap;}
+    .bdesc{font-size:0.68rem;color:var(--text3);line-height:1.3;margin-bottom:0.15rem;}
+    .cpill{display:inline-block;font-size:0.5rem;font-weight:700;text-transform:uppercase;padding:0.08rem 0.3rem;border-radius:2px;margin-left:0.25rem;vertical-align:middle;}
+    .c-debt{background:rgba(244,91,105,0.15);color:#f45b69;border:1px solid rgba(244,91,105,0.35);}
+    .c-housing{background:rgba(251,191,36,0.15);color:#d4a017;}
+    .c-groceries{background:rgba(34,197,94,0.15);color:#4ade80;}
+    .c-transportation{background:rgba(59,130,246,0.15);color:#60a5fa;}
+    .c-education{background:rgba(249,115,22,0.15);color:#fb923c;}
+    .c-subscription{background:rgba(99,102,241,0.15);color:#818cf8;}
+    .c-music{background:rgba(168,85,247,0.15);color:#c084fc;}
+    .badge-weekly{display:inline-block;font-size:0.5rem;font-weight:700;text-transform:uppercase;padding:0.06rem 0.25rem;border-radius:2px;margin-left:0.2rem;background:rgba(99,102,241,0.15);color:#818cf8;}
+    .badge-final{display:inline-block;font-size:0.5rem;font-weight:700;text-transform:uppercase;padding:0.06rem 0.25rem;border-radius:2px;margin-left:0.2rem;background:rgba(244,91,105,0.15);color:#f45b69;}
+    .footer-note{margin-top:1.5rem;text-align:center;font-size:0.65rem;color:var(--text3);font-family:var(--mono);}
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+  const { useState, useMemo } = React;
+  
+  const CYCLE_DATA = [
+    {num:5,paydate:new Date(2026,2,6),bills:[
+      {name:'Debt: AT&T',amount:232.10,cat:'debt',due:new Date(2026,2,6)},
+      {name:'Debt: Consolidation Payment – NDR',amount:145.50,cat:'debt',due:new Date(2026,2,6)},
+      {name:'Debt: Credit Card Payments',amount:463.93,cat:'debt',due:new Date(2026,2,6)},
+      {name:'Debt Collection: True Accord',amount:330,cat:'debt',due:new Date(2026,2,6)},
+      {name:'Groceries: Meal Subscription Service',amount:125,cat:'groceries',weekly:true,due:new Date(2026,2,10)},
+      {name:'Groceries: Meal Subscription Service',amount:125,cat:'groceries',weekly:true,due:new Date(2026,2,17)},
+      {name:'Music Lessons',amount:65,cat:'music',due:new Date(2026,2,6)},
+      {name:'Subscription: NZXT Flex',amount:95,cat:'subscription',due:new Date(2026,2,6)},
+      {name:'Transportation: Gasoline',amount:200,cat:'transportation',due:new Date(2026,2,6)},
+    ]},
+    {num:6,paydate:new Date(2026,2,20),bills:[
+      {name:'Debt: AT&T',amount:232.10,cat:'debt',due:new Date(2026,2,20)},
+      {name:'Debt: Consolidation Payment – NDR',amount:145.50,cat:'debt',due:new Date(2026,2,20)},
+      {name:'Debt: UM Tuition',amount:210,cat:'debt',due:new Date(2026,2,20)},
+      {name:'Debt Collection: Firstsource',amount:228.80,cat:'debt',due:new Date(2026,2,20)},
+      {name:'Debt Collection: January (EZX3-YJTA)',amount:57.36,cat:'debt',due:new Date(2026,2,20)},
+      {name:'Debt Collection: January (OP81-HGUY)',amount:47.94,cat:'debt',due:new Date(2026,2,20)},
+      {name:'Debt Collection: January (PRR3-YRGP)',amount:49.40,cat:'debt',due:new Date(2026,2,20)},
+      {name:'Debt Collection: January (S34S-9LMK)',amount:80.28,cat:'debt',due:new Date(2026,2,20)},
+      {name:'Debt Collection: Williams & Fudge',amount:528.85,cat:'debt',due:new Date(2026,2,20)},
+      {name:'Education: IQRA Network',amount:230,cat:'education',due:new Date(2026,3,1)},
+      {name:'Groceries: Meal Subscription Service',amount:125,cat:'groceries',weekly:true,due:new Date(2026,2,24)},
+      {name:'Groceries: Meal Subscription Service',amount:125,cat:'groceries',weekly:true,due:new Date(2026,3,3)},
+      {name:'Housing: Internet',amount:70,cat:'housing',due:new Date(2026,3,5)},
+      {name:'Music Lessons',amount:65,cat:'music',due:new Date(2026,2,20)},
+      {name:'Transportation: Gasoline',amount:200,cat:'transportation',due:new Date(2026,2,20)},
+    ]},
+    {num:7,paydate:new Date(2026,3,3),bills:[
+      {name:'Debt: AT&T',amount:232.10,cat:'debt',due:new Date(2026,3,3)},
+      {name:'Debt: Consolidation Payment – NDR',amount:145.50,cat:'debt',due:new Date(2026,3,3)},
+      {name:'Debt: UM Tuition',amount:210,cat:'debt',due:new Date(2026,3,3)},
+      {name:'Debt Collection: January (EZX3-YJTA)',amount:57.36,cat:'debt',due:new Date(2026,3,3)},
+      {name:'Debt Collection: January (OP81-HGUY)',amount:47.94,cat:'debt',due:new Date(2026,3,3)},
+      {name:'Debt Collection: January (PRR3-YRGP)',amount:49.40,cat:'debt',due:new Date(2026,3,3)},
+      {name:'Debt Collection: January (S34S-9LMK)',amount:80.28,cat:'debt',due:new Date(2026,3,3)},
+      {name:'Debt Collection: indebted',amount:100.99,cat:'debt',due:new Date(2026,3,3)},
+      {name:'Debt Collection: indebted',amount:98.44,cat:'debt',due:new Date(2026,3,3)},
+      {name:'Groceries: Meal Subscription Service',amount:125,cat:'groceries',weekly:true,due:new Date(2026,3,7)},
+      {name:'Groceries: Meal Subscription Service',amount:125,cat:'groceries',weekly:true,due:new Date(2026,3,14)},
+      {name:'Music Lessons',amount:65,cat:'music',due:new Date(2026,3,3)},
+      {name:'Subscription: NZXT Flex',amount:95,cat:'subscription',due:new Date(2026,3,3)},
+      {name:'Transportation: Gasoline',amount:200,cat:'transportation',due:new Date(2026,3,3)},
+      {name:'Transportation: Maintenance',amount:130,cat:'transportation',due:new Date(2026,3,10)},
+    ]},
+    {num:8,paydate:new Date(2026,3,17),bills:[
+      {name:'Debt: Consolidation Payment – NDR',amount:145.50,cat:'debt',due:new Date(2026,3,17)},
+      {name:'Debt: UM Tuition',amount:210,cat:'debt',due:new Date(2026,3,17)},
+      {name:'Debt Collection: January (EZX3-YJTA)',amount:57.36,cat:'debt',due:new Date(2026,3,17)},
+      {name:'Debt Collection: January (OP81-HGUY)',amount:47.94,cat:'debt',due:new Date(2026,3,17)},
+      {name:'Debt Collection: January (PRR3-YRGP)',amount:49.40,cat:'debt',due:new Date(2026,3,17)},
+      {name:'Debt Collection: January (S34S-9LMK)',amount:80.28,cat:'debt',due:new Date(2026,3,17),final:true},
+      {name:'Education: IQRA Network',amount:230,cat:'education',due:new Date(2026,4,1)},
+      {name:'Groceries: Meal Subscription Service',amount:125,cat:'groceries',weekly:true,due:new Date(2026,3,21)},
+      {name:'Groceries: Meal Subscription Service',amount:125,cat:'groceries',weekly:true,due:new Date(2026,3,28)},
+      {name:'Music Lessons',amount:65,cat:'music',due:new Date(2026,3,17)},
+      {name:'Transportation: Gasoline',amount:200,cat:'transportation',due:new Date(2026,3,17)},
+    ]},
+    {num:9,paydate:new Date(2026,4,1),bills:[
+      {name:'Debt: AT&T',amount:232.10,cat:'debt',due:new Date(2026,4,1)},
+      {name:'Debt: Consolidation Payment – NDR',amount:145.50,cat:'debt',due:new Date(2026,4,1)},
+      {name:'Debt: UM Tuition',amount:210,cat:'debt',due:new Date(2026,4,1)},
+      {name:'Debt Collection: January (EZX3-YJTA)',amount:57.36,cat:'debt',due:new Date(2026,4,1)},
+      {name:'Debt Collection: January (OP81-HGUY)',amount:47.94,cat:'debt',due:new Date(2026,4,1)},
+      {name:'Debt Collection: January (PRR3-YRGP)',amount:49.40,cat:'debt',due:new Date(2026,4,1)},
+      {name:'Debt Collection: indebted',amount:100.99,cat:'debt',due:new Date(2026,4,1)},
+      {name:'Groceries: Meal Subscription Service',amount:125,cat:'groceries',weekly:true,due:new Date(2026,4,5)},
+      {name:'Groceries: Meal Subscription Service',amount:125,cat:'groceries',weekly:true,due:new Date(2026,4,12)},
+      {name:'Housing: Internet',amount:70,cat:'housing',due:new Date(2026,4,5)},
+      {name:'Subscription: NZXT Flex',amount:95,cat:'subscription',due:new Date(2026,4,1)},
+      {name:'Transportation: Gasoline',amount:200,cat:'transportation',due:new Date(2026,4,1)},
+      {name:'Transportation: Maintenance',amount:130,cat:'transportation',due:new Date(2026,4,8)},
+    ]},
+    {num:10,paydate:new Date(2026,4,15),bills:[
+      {name:'Debt: Consolidation Payment – NDR',amount:145.50,cat:'debt',due:new Date(2026,4,15)},
+      {name:'Debt: UM Tuition',amount:210,cat:'debt',due:new Date(2026,4,15)},
+      {name:'Debt Collection: January (EZX3-YJTA)',amount:57.36,cat:'debt',due:new Date(2026,4,15)},
+      {name:'Debt Collection: January (OP81-HGUY)',amount:47.94,cat:'debt',due:new Date(2026,4,15)},
+      {name:'Debt Collection: January (PRR3-YRGP)',amount:49.40,cat:'debt',due:new Date(2026,4,15)},
+      {name:'Education: IQRA Network',amount:230,cat:'education',due:new Date(2026,5,1)},
+      {name:'Groceries: Meal Subscription Service',amount:125,cat:'groceries',weekly:true,due:new Date(2026,4,19)},
+      {name:'Groceries: Meal Subscription Service',amount:125,cat:'groceries',weekly:true,due:new Date(2026,4,26)},
+      {name:'Music Lessons',amount:65,cat:'music',due:new Date(2026,4,15)},
+      {name:'Transportation: Gasoline',amount:200,cat:'transportation',due:new Date(2026,4,15)},
+    ]},
+    {num:11,paydate:new Date(2026,4,29),bills:[
+      {name:'Debt: AT&T',amount:232.10,cat:'debt',due:new Date(2026,4,29)},
+      {name:'Debt: Consolidation Payment – NDR',amount:145.50,cat:'debt',due:new Date(2026,4,29)},
+      {name:'Debt: UM Tuition',amount:210,cat:'debt',due:new Date(2026,4,29)},
+      {name:'Debt Collection: January (EZX3-YJTA)',amount:57.36,cat:'debt',due:new Date(2026,4,29)},
+      {name:'Debt Collection: January (OP81-HGUY)',amount:47.94,cat:'debt',due:new Date(2026,4,29)},
+      {name:'Debt Collection: January (PRR3-YRGP)',amount:49.40,cat:'debt',due:new Date(2026,4,29),final:true},
+      {name:'Debt Collection: indebted',amount:100.99,cat:'debt',due:new Date(2026,4,29)},
+      {name:'Groceries: Meal Subscription Service',amount:125,cat:'groceries',weekly:true,due:new Date(2026,5,3)},
+      {name:'Groceries: Meal Subscription Service',amount:125,cat:'groceries',weekly:true,due:new Date(2026,5,10)},
+      {name:'Subscription: NZXT Flex',amount:95,cat:'subscription',due:new Date(2026,4,29)},
+      {name:'Transportation: Gasoline',amount:200,cat:'transportation',due:new Date(2026,4,29)},
+      {name:'Transportation: Maintenance',amount:130,cat:'transportation',due:new Date(2026,5,6)},
+    ]},
+    {num:12,paydate:new Date(2026,5,12),bills:[
+      {name:'Debt: Consolidation Payment – NDR',amount:145.50,cat:'debt',due:new Date(2026,5,12)},
+      {name:'Debt: UM Tuition',amount:210,cat:'debt',due:new Date(2026,5,12)},
+      {name:'Debt Collection: January (EZX3-YJTA)',amount:57.36,cat:'debt',due:new Date(2026,5,12)},
+      {name:'Debt Collection: January (OP81-HGUY)',amount:47.94,cat:'debt',due:new Date(2026,5,12)},
+      {name:'Education: IQRA Network',amount:230,cat:'education',due:new Date(2026,6,1)},
+      {name:'Groceries: Meal Subscription Service',amount:125,cat:'groceries',weekly:true,due:new Date(2026,5,16)},
+      {name:'Groceries: Meal Subscription Service',amount:125,cat:'groceries',weekly:true,due:new Date(2026,5,23)},
+      {name:'Music Lessons',amount:65,cat:'music',due:new Date(2026,5,12)},
+      {name:'Transportation: Gasoline',amount:200,cat:'transportation',due:new Date(2026,5,12)},
+    ]},
+    {num:13,paydate:new Date(2026,5,26),bills:[
+      {name:'Debt: AT&T',amount:232.10,cat:'debt',due:new Date(2026,5,26)},
+      {name:'Debt: Consolidation Payment – NDR',amount:145.50,cat:'debt',due:new Date(2026,5,26)},
+      {name:'Debt: UM Tuition',amount:210,cat:'debt',due:new Date(2026,5,26)},
+      {name:'Debt Collection: indebted',amount:100.99,cat:'debt',due:new Date(2026,5,26)},
+      {name:'Groceries: Meal Subscription Service',amount:125,cat:'groceries',weekly:true,due:new Date(2026,5,30)},
+      {name:'Groceries: Meal Subscription Service',amount:125,cat:'groceries',weekly:true,due:new Date(2026,6,7)},
+      {name:'Housing: Internet',amount:70,cat:'housing',due:new Date(2026,6,5)},
+      {name:'Subscription: NZXT Flex',amount:95,cat:'subscription',due:new Date(2026,5,26)},
+      {name:'Transportation: Gasoline',amount:200,cat:'transportation',due:new Date(2026,5,26)},
+      {name:'Transportation: Maintenance',amount:130,cat:'transportation',due:new Date(2026,6,3)},
+    ]},
+    {num:14,paydate:new Date(2026,6,10),bills:[
+      {name:'Debt: Consolidation Payment – NDR',amount:145.50,cat:'debt',due:new Date(2026,6,10)},
+      {name:'Debt: UM Tuition',amount:210,cat:'debt',due:new Date(2026,6,10)},
+      {name:'Debt Collection: January (EZX3-YJTA)',amount:57.36,cat:'debt',due:new Date(2026,6,10)},
+      {name:'Debt Collection: January (OP81-HGUY)',amount:47.94,cat:'debt',due:new Date(2026,6,10)},
+      {name:'Education: IQRA Network',amount:230,cat:'education',due:new Date(2026,7,1)},
+      {name:'Groceries: Meal Subscription Service',amount:125,cat:'groceries',weekly:true,due:new Date(2026,6,14)},
+      {name:'Groceries: Meal Subscription Service',amount:125,cat:'groceries',weekly:true,due:new Date(2026,6,21)},
+      {name:'Music Lessons',amount:65,cat:'music',due:new Date(2026,6,10)},
+      {name:'Transportation: Gasoline',amount:200,cat:'transportation',due:new Date(2026,6,10)},
+    ]},
+    {num:15,paydate:new Date(2026,6,24),bills:[
+      {name:'Debt: AT&T',amount:232.10,cat:'debt',due:new Date(2026,6,24)},
+      {name:'Debt: Consolidation Payment – NDR',amount:145.50,cat:'debt',due:new Date(2026,6,24)},
+      {name:'Debt: UM Tuition',amount:210,cat:'debt',due:new Date(2026,6,24)},
+      {name:'Debt Collection: indebted',amount:100.99,cat:'debt',due:new Date(2026,6,24)},
+      {name:'Debt Collection: January (EZX3-YJTA)',amount:57.36,cat:'debt',due:new Date(2026,6,24)},
+      {name:'Debt Collection: January (OP81-HGUY)',amount:47.94,cat:'debt',due:new Date(2026,6,24)},
+      {name:'Groceries: Meal Subscription Service',amount:125,cat:'groceries',weekly:true,due:new Date(2026,6,28)},
+      {name:'Groceries: Meal Subscription Service',amount:125,cat:'groceries',weekly:true,due:new Date(2026,7,4)},
+      {name:'Housing: Internet',amount:70,cat:'housing',due:new Date(2026,7,5)},
+      {name:'Subscription: NZXT Flex',amount:95,cat:'subscription',due:new Date(2026,6,24)},
+      {name:'Transportation: Gasoline',amount:200,cat:'transportation',due:new Date(2026,6,24)},
+      {name:'Transportation: Maintenance',amount:130,cat:'transportation',due:new Date(2026,7,1)},
+    ]},
+    {num:16,paydate:new Date(2026,7,7),bills:[
+      {name:'Debt: Consolidation Payment – NDR',amount:145.50,cat:'debt',due:new Date(2026,7,7)},
+      {name:'Debt: UM Tuition',amount:210,cat:'debt',due:new Date(2026,7,7)},
+      {name:'Debt Collection: January (EZX3-YJTA)',amount:57.36,cat:'debt',due:new Date(2026,7,7)},
+      {name:'Debt Collection: January (OP81-HGUY)',amount:47.94,cat:'debt',due:new Date(2026,7,7)},
+      {name:'Education: IQRA Network',amount:230,cat:'education',due:new Date(2026,8,1)},
+      {name:'Groceries: Meal Subscription Service',amount:125,cat:'groceries',weekly:true,due:new Date(2026,7,11)},
+      {name:'Groceries: Meal Subscription Service',amount:125,cat:'groceries',weekly:true,due:new Date(2026,7,18)},
+      {name:'Music Lessons',amount:65,cat:'music',due:new Date(2026,7,7)},
+      {name:'Transportation: Gasoline',amount:200,cat:'transportation',due:new Date(2026,7,7)},
+    ]},
+    {num:17,paydate:new Date(2026,7,21),bills:[
+      {name:'Debt: AT&T',amount:232.10,cat:'debt',due:new Date(2026,7,21)},
+      {name:'Debt: Consolidation Payment – NDR',amount:145.50,cat:'debt',due:new Date(2026,7,21)},
+      {name:'Debt: UM Tuition',amount:210,cat:'debt',due:new Date(2026,7,21)},
+      {name:'Debt Collection: indebted',amount:100.99,cat:'debt',due:new Date(2026,7,21)},
+      {name:'Debt Collection: January (EZX3-YJTA)',amount:57.36,cat:'debt',due:new Date(2026,7,21)},
+      {name:'Debt Collection: January (OP81-HGUY)',amount:47.94,cat:'debt',due:new Date(2026,7,21)},
+      {name:'Groceries: Meal Subscription Service',amount:125,cat:'groceries',weekly:true,due:new Date(2026,7,25)},
+      {name:'Groceries: Meal Subscription Service',amount:125,cat:'groceries',weekly:true,due:new Date(2026,8,1)},
+      {name:'Housing: Internet',amount:70,cat:'housing',due:new Date(2026,8,5)},
+      {name:'Subscription: NZXT Flex',amount:95,cat:'subscription',due:new Date(2026,7,21)},
+      {name:'Transportation: Gasoline',amount:200,cat:'transportation',due:new Date(2026,7,21)},
+      {name:'Transportation: Maintenance',amount:130,cat:'transportation',due:new Date(2026,7,29)},
+    ]},
+    {num:18,paydate:new Date(2026,8,4),bills:[
+      {name:'Debt: Consolidation Payment – NDR',amount:145.50,cat:'debt',due:new Date(2026,8,4)},
+      {name:'Debt: UM Tuition',amount:210,cat:'debt',due:new Date(2026,8,4)},
+      {name:'Debt Collection: January (EZX3-YJTA)',amount:57.36,cat:'debt',due:new Date(2026,8,4),final:true},
+      {name:'Debt Collection: January (OP81-HGUY)',amount:47.94,cat:'debt',due:new Date(2026,8,4),final:true},
+      {name:'Groceries: Meal Subscription Service',amount:125,cat:'groceries',weekly:true,due:new Date(2026,8,8)},
+      {name:'Groceries: Meal Subscription Service',amount:125,cat:'groceries',weekly:true,due:new Date(2026,8,15)},
+      {name:'Music Lessons',amount:65,cat:'music',due:new Date(2026,8,4)},
+      {name:'Transportation: Gasoline',amount:200,cat:'transportation',due:new Date(2026,8,4)},
+    ]},
+    {num:19,paydate:new Date(2026,8,18),bills:[
+      {name:'Debt: AT&T',amount:232.10,cat:'debt',due:new Date(2026,8,18)},
+      {name:'Debt: Consolidation Payment – NDR',amount:145.50,cat:'debt',due:new Date(2026,8,18)},
+      {name:'Debt: UM Tuition',amount:210,cat:'debt',due:new Date(2026,8,18)},
+      {name:'Debt Collection: indebted',amount:100.99,cat:'debt',due:new Date(2026,8,18)},
+      {name:'Groceries: Meal Subscription Service',amount:125,cat:'groceries',weekly:true,due:new Date(2026,8,22)},
+      {name:'Groceries: Meal Subscription Service',amount:125,cat:'groceries',weekly:true,due:new Date(2026,8,29)},
+      {name:'Housing: Internet',amount:70,cat:'housing',due:new Date(2026,9,5)},
+      {name:'Subscription: NZXT Flex',amount:95,cat:'subscription',due:new Date(2026,8,18)},
+      {name:'Transportation: Gasoline',amount:200,cat:'transportation',due:new Date(2026,8,18)},
+      {name:'Transportation: Maintenance',amount:130,cat:'transportation',due:new Date(2026,8,26)},
+    ]},
+    {num:20,paydate:new Date(2026,9,2),bills:[
+      {name:'Debt: Consolidation Payment – NDR',amount:145.50,cat:'debt',due:new Date(2026,9,2)},
+      {name:'Debt: UM Tuition',amount:210,cat:'debt',due:new Date(2026,9,2)},
+      {name:'Groceries: Meal Subscription Service',amount:125,cat:'groceries',weekly:true,due:new Date(2026,9,6)},
+      {name:'Groceries: Meal Subscription Service',amount:125,cat:'groceries',weekly:true,due:new Date(2026,9,13)},
+      {name:'Music Lessons',amount:65,cat:'music',due:new Date(2026,9,2)},
+      {name:'Transportation: Gasoline',amount:200,cat:'transportation',due:new Date(2026,9,2)},
+    ]},
+    {num:21,paydate:new Date(2026,9,16),bills:[
+      {name:'Debt: AT&T',amount:232.10,cat:'debt',due:new Date(2026,9,16)},
+      {name:'Debt: Consolidation Payment – NDR',amount:145.50,cat:'debt',due:new Date(2026,9,16)},
+      {name:'Debt: UM Tuition',amount:210,cat:'debt',due:new Date(2026,9,16)},
+      {name:'Debt Collection: indebted',amount:100.99,cat:'debt',due:new Date(2026,9,16)},
+      {name:'Groceries: Meal Subscription Service',amount:125,cat:'groceries',weekly:true,due:new Date(2026,9,20)},
+      {name:'Groceries: Meal Subscription Service',amount:125,cat:'groceries',weekly:true,due:new Date(2026,9,27)},
+      {name:'Housing: Internet',amount:70,cat:'housing',due:new Date(2026,10,5)},
+      {name:'Subscription: NZXT Flex',amount:95,cat:'subscription',due:new Date(2026,9,16)},
+      {name:'Transportation: Gasoline',amount:200,cat:'transportation',due:new Date(2026,9,16)},
+      {name:'Transportation: Maintenance',amount:130,cat:'transportation',due:new Date(2026,9,24)},
+    ]},
+    {num:22,paydate:new Date(2026,9,30),bills:[
+      {name:'Debt: Consolidation Payment – NDR',amount:145.50,cat:'debt',due:new Date(2026,9,30)},
+      {name:'Debt: UM Tuition',amount:210,cat:'debt',due:new Date(2026,9,30)},
+      {name:'Groceries: Meal Subscription Service',amount:125,cat:'groceries',weekly:true,due:new Date(2026,10,4)},
+      {name:'Groceries: Meal Subscription Service',amount:125,cat:'groceries',weekly:true,due:new Date(2026,10,11)},
+      {name:'Music Lessons',amount:65,cat:'music',due:new Date(2026,9,30)},
+      {name:'Transportation: Gasoline',amount:200,cat:'transportation',due:new Date(2026,9,30)},
+    ]},
+    {num:23,paydate:new Date(2026,10,13),bills:[
+      {name:'Debt: AT&T',amount:232.10,cat:'debt',due:new Date(2026,10,13)},
+      {name:'Debt: Consolidation Payment – NDR',amount:145.50,cat:'debt',due:new Date(2026,10,13)},
+      {name:'Debt: UM Tuition',amount:210,cat:'debt',due:new Date(2026,10,13)},
+      {name:'Debt Collection: indebted',amount:100.99,cat:'debt',due:new Date(2026,10,13)},
+      {name:'Groceries: Meal Subscription Service',amount:125,cat:'groceries',weekly:true,due:new Date(2026,10,17)},
+      {name:'Groceries: Meal Subscription Service',amount:125,cat:'groceries',weekly:true,due:new Date(2026,10,24)},
+      {name:'Housing: Internet',amount:70,cat:'housing',due:new Date(2026,11,5)},
+      {name:'Subscription: NZXT Flex',amount:95,cat:'subscription',due:new Date(2026,10,13)},
+      {name:'Transportation: Gasoline',amount:200,cat:'transportation',due:new Date(2026,10,13)},
+      {name:'Transportation: Maintenance',amount:130,cat:'transportation',due:new Date(2026,10,22)},
+    ]},
+    {num:24,paydate:new Date(2026,10,27),bills:[
+      {name:'Debt: Consolidation Payment – NDR',amount:145.50,cat:'debt',due:new Date(2026,10,27)},
+      {name:'Debt: UM Tuition',amount:210,cat:'debt',due:new Date(2026,10,27)},
+      {name:'Groceries: Meal Subscription Service',amount:125,cat:'groceries',weekly:true,due:new Date(2026,10,31)},
+      {name:'Groceries: Meal Subscription Service',amount:125,cat:'groceries',weekly:true,due:new Date(2026,11,7)},
+      {name:'Music Lessons',amount:65,cat:'music',due:new Date(2026,10,27)},
+      {name:'Transportation: Gasoline',amount:200,cat:'transportation',due:new Date(2026,10,27)},
+    ]},
+    {num:25,paydate:new Date(2026,11,11),bills:[
+      {name:'Debt: AT&T',amount:232.10,cat:'debt',due:new Date(2026,11,11)},
+      {name:'Debt: Consolidation Payment – NDR',amount:145.50,cat:'debt',due:new Date(2026,11,11)},
+      {name:'Debt: UM Tuition',amount:210,cat:'debt',due:new Date(2026,11,11)},
+      {name:'Debt Collection: indebted',amount:100.99,cat:'debt',due:new Date(2026,11,11)},
+      {name:'Groceries: Meal Subscription Service',amount:125,cat:'groceries',weekly:true,due:new Date(2026,11,15)},
+      {name:'Groceries: Meal Subscription Service',amount:125,cat:'groceries',weekly:true,due:new Date(2026,11,22)},
+      {name:'Housing: Internet',amount:70,cat:'housing',due:new Date(2026,11,5)},
+      {name:'Subscription: NZXT Flex',amount:95,cat:'subscription',due:new Date(2026,11,11)},
+      {name:'Transportation: Gasoline',amount:200,cat:'transportation',due:new Date(2026,11,11)},
+      {name:'Transportation: Maintenance',amount:130,cat:'transportation',due:new Date(2026,11,20)},
+    ]},
+    {num:26,paydate:new Date(2026,11,18),bills:[
+      {name:'Debt: Consolidation Payment – NDR',amount:145.50,cat:'debt',due:new Date(2026,11,18)},
+      {name:'Debt: UM Tuition',amount:210,cat:'debt',due:new Date(2026,11,18)},
+      {name:'Groceries: Meal Subscription Service',amount:125,cat:'groceries',weekly:true,due:new Date(2026,11,22)},
+      {name:'Groceries: Meal Subscription Service',amount:125,cat:'groceries',weekly:true,due:new Date(2026,11,29)},
+      {name:'Music Lessons',amount:65,cat:'music',due:new Date(2026,11,18)},
+      {name:'Transportation: Gasoline',amount:200,cat:'transportation',due:new Date(2026,11,18)},
+    ]},
+  ];
+
+  function buildCycles(){
+    return CYCLE_DATA.map((data,idx)=>{
+      const bills=data.bills.map((b,bi)=>({
+        id:'bill-'+idx+'-'+bi,
+        name:b.name,
+        amount:b.amount,
+        cat:b.cat,
+        weekly:b.weekly||false,
+        final:b.final||false,
+        due:b.due
+      }));
+      bills.sort((a,b)=>a.name.localeCompare(b.name));
+      const total=bills.reduce((s,b)=>s+b.amount,0);
+      return{
+        id:'cycle-'+idx,
+        num:data.num,
+        paydate:data.paydate,
+        bills:bills,
+        total:total,
+        weekly:total/2
+      };
+    });
+  }
+
+  const fmt=d=>d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  const fmtShort=d=>d.toLocaleDateString('en-US',{month:'2-digit',day:'2-digit'});
+  const money=n=>'$'+n.toFixed(2);
+
+  function App(){
+    const cycles=useMemo(buildCycles,[]);
+    const [cs,setCs]=useState(()=>{
+      const s={};
+      cycles.forEach(c=>{s[c.id]={open:false,paid:{}};});
+      return s;
+    });
+
+    const togglePaid=(cid,bid)=>setCs(p=>({...p,[cid]:{...p[cid],paid:{...p[cid].paid,[bid]:!p[cid].paid[bid]}}}));
+    const toggleOpen=(cid)=>setCs(p=>({...p,[cid]:{...p[cid],open:!p[cid].open}}));
+
+    const yBills=cycles.reduce((s,c)=>s+c.total,0);
+    const yPaid=cycles.reduce((s,c)=>s+c.bills.filter(b=>cs[c.id].paid[b.id]).reduce((ss,b)=>ss+b.amount,0),0);
+
+    return (
+      <div className="wrap">
+        <div className="hdr">
+          <div className="hdr-top">
+            <div>
+              <h1>Financial<span> Tracker</span></h1>
+              <p className="sub">22 Paychecks · Mar–Dec 2026</p>
+            </div>
+          </div>
+          <div className="yr-bar">
+            <div className="yr-stat"><div className="yr-lbl">Total Bills</div><div className="yr-val">{money(yBills)}</div></div>
+            <div className="yr-stat"><div className="yr-lbl">Paid</div><div className="yr-val g">{money(yPaid)}</div></div>
+          </div>
+        </div>
+
+        <div className="cycles">
+          {cycles.map(cycle=>{
+            const cst=cs[cycle.id];
+            const paidAmt=cycle.bills.filter(b=>cst.paid[b.id]).reduce((s,b)=>s+b.amount,0);
+            const remaining=cycle.total-paidAmt;
+            const isOpen=cst.open;
+            return (
+              <div key={cycle.id} className={'card'+(isOpen?' open':'')}>
+                <button className="card-hdr" onClick={()=>toggleOpen(cycle.id)}>
+                  <div className="cleft">
+                    <span className="num-badge">#{cycle.num}</span>
+                    <span className="cdate">{fmt(cycle.paydate)}</span>
+                  </div>
+                  <div className="cstats">
+                    <div className="st"><span className="st-lbl">Bills</span><span className="st-val">{money(cycle.total)}</span></div>
+                    <div className="st"><span className="st-val d">{money(remaining)}</span></div>
+                  </div>
+                  <svg className={'chev'+(isOpen?' rot':'')} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/>
+                  </svg>
+                </button>
+                {isOpen&&(
+                  <div className="card-body">
+                    <div className="pane">
+                      <div className="weekly-box">
+                        <div>
+                          <div className="weekly-label">Weekly Amount Needed</div>
+                          <div className="weekly-value">{money(cycle.weekly)}</div>
+                        </div>
+                      </div>
+                      <div className="pane-ttl">Bills Due</div>
+                      <div className="bill-list">
+                        {cycle.bills.map(bill=>{
+                          const isPaid=!!cst.paid[bill.id];
+                          return(
+                            <div key={bill.id} className={'bill-btn'+(isPaid?' paid':'')} onClick={()=>togglePaid(cycle.id,bill.id)}>
+                              <div className="chkbox">{isPaid?'✓':''}</div>
+                              <div className="binfo">
+                                <div className="brow">
+                                  <span className="bamt">{money(bill.amount)}</span>
+                                  <span className="bdue">{fmtShort(bill.due)}</span>
+                                </div>
+                                <div className="bdesc">{bill.name}{bill.weekly&&<span className='badge-weekly'>[W]</span>}{bill.final&&<span className='badge-final'>✓</span>}{bill.cat&&<span className={'cpill c-'+bill.cat}>{bill.cat.substring(0,3)}</span>}</div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+        <p className="footer-note">tap to mark paid</p>
+      </div>
+    );
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
